@@ -15,6 +15,7 @@ import 'window.dart';
 
 class Tray {
   static Tray? _instance;
+  String? _trayTitle;
 
   Tray._internal();
 
@@ -207,11 +208,13 @@ class Tray {
     if (!system.isMacOS) {
       return;
     }
-    if (!showTrayTitle) {
-      await trayManager.setTitle('');
-    } else {
-      await trayManager.setTitle(traffic.trayTitle);
+    final title = showTrayTitle ? traffic.trayTitle : '';
+    // ponytail: Dart-side cache avoids macOS status item redraw storms.
+    if (_trayTitle == title) {
+      return;
     }
+    _trayTitle = title;
+    await trayManager.setTitle(title);
   }
 
   Future<void> _copyEnv(int port) async {
